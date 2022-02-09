@@ -9,11 +9,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"sync"
 	"time"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/pkg/errors"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 
@@ -258,9 +260,31 @@ func (in *pubsubInput) newPubsubClient(ctx context.Context) (*pubsub.Client, err
 	}
 
 	if in.CredentialsFile != "" {
-		opts = append(opts, option.WithCredentialsFile(in.CredentialsFile))
+
+		data, err := ioutil.ReadFile(in.CredentialsFile)
+		if err != nil {
+			return nil, fmt.Errorf("cannot read credential file %q: %w", in.CredentialsFile, err)
+		}
+		// Generate Credentials for the provided CredentialsFile file
+		creds, err := google.CredentialsFromJSON(ctx, data, "https://www.googleapis.com/auth/cloud-platform")
+		if err != nil {
+			return nil, fmt.Errorf("cannot create credential from  %q: %w", in.CredentialsFile, err)
+		}
+		opts = append(opts, option.WithCredentials(creds))
 	} else if len(in.CredentialsJSON) > 0 {
-		opts = append(opts, option.WithCredentialsJSON(in.CredentialsJSON))
+
+		creds, err := google.CredentialsFromJSON(ctx, in.CredentialsJSON, "https://www.googleapis.com/auth/cloud-platform")
+		if err != nil {
+			return nil, fmt.Errorf("cannot create credential from  %q: %w", in.CredentialsJSON, err)
+		}
+		opts = append(opts, option.WithCredentials(creds))
+	} else {
+		// Generate Credentials for the Default Credentials
+		creds, err := google.FindDefaultCredentials(ctx, "https://www.googleapis.com/auth/cloud-platform")
+		if err != nil {
+			return nil, fmt.Errorf("cannot create Default Credentials %w", err)
+		}
+		opts = append(opts, option.WithCredentials(creds))
 	}
 
 	return pubsub.NewClient(ctx, in.ProjectID, opts...)
