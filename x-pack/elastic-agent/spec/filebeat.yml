@@ -66,29 +66,8 @@ rules:
     selector: inputs
     key: type
     values:
-    - aws-cloudwatch
-    - aws-s3
-    - azure-eventhub
-    - cloudfoundry
-    - container
-    - docker
     - gcp-pubsub
-    - http_endpoint
-    - httpjson
-    - journald
-    - kafka
     - log
-    - mqtt
-    - netflow
-    - o365audit
-    - redis
-    - stdin
-    - syslog
-    - tcp
-    - udp
-    - unix
-    - winlog
-    - filestream
 
 - filter_values:
     selector: inputs

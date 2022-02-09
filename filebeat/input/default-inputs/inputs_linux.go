@@ -18,7 +18,6 @@
 package inputs
 
 import (
-	"github.com/elastic/beats/v7/filebeat/input/journald"
 	v2 "github.com/elastic/beats/v7/filebeat/input/v2"
 	cursor "github.com/elastic/beats/v7/filebeat/input/v2/input-cursor"
 	"github.com/elastic/beats/v7/libbeat/beat"
@@ -33,11 +32,6 @@ type osComponents interface {
 
 func osInputs(info beat.Info, log *logp.Logger, components osComponents) []v2.Plugin {
 	var plugins []v2.Plugin
-
-	zeroPlugin := v2.Plugin{}
-	if journald := journald.Plugin(log, components); journald != zeroPlugin {
-		plugins = append(plugins, journald)
-	}
 
 	return plugins
 }
